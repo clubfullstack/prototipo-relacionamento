@@ -1,0 +1,15 @@
+// data.json
+[
+  {
+    "name": "João Capoeira",
+    "specialty": "Capoeira",
+    "location": "São Paulo",
+    "paymentOptions": ["Dinheiro", "Serviço"]
+  },
+  {
+    "name": "Ana Terapias",
+    "specialty": "Terapias Holísticas",
+    "location": "Rio de Janeiro",
+    "paymentOptions": ["Dinheiro", "Artes"]
+  }
+]
