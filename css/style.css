@@ -1,0 +1,18 @@
+/* styles.css */
+body {
+  font-family: Arial, sans-serif;
+}
+
+.hero {
+  background: url('../assets/hero-bg.jpg') no-repeat center center;
+  background-size: cover;
+  color: white;
+}
+
+.card {
+  margin-bottom: 1rem;
+}
+
+#resultsSection {
+  display: none; /* Ocultar resultados inicialmente */
+}
