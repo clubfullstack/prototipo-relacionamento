@@ -1,86 +1,92 @@
+<?php
+// Configuração de conexão com o banco de dados
+$host = "sql.example.com"; // Substituir pelo host do banco
+$user = "seu_usuario";     // Substituir pelo usuário do banco
+$password = "sua_senha";   // Substituir pela senha do banco
+$database = "ciclico";     // Substituir pelo nome do banco
+
+// Conexão com o banco
+$conn = new mysqli($host, $user, $password, $database);
+
+// Verificar conexão
+if ($conn->connect_error) {
+    die("Erro de conexão: " . $conn->connect_error);
+}
+
+// Lógica de Cadastro
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["register"])) {
+    $name = $_POST["name"];
+    $email = $_POST["email"];
+    $specialty = $_POST["specialty"];
+    $description = $_POST["description"];
+    $location = $_POST["location"];
+
+    // Query de inserção
+    $sql = "INSERT INTO users (name, email, specialty, description, location) 
+            VALUES ('$name', '$email', '$specialty', '$description', '$location')";
+
+    if ($conn->query($sql) === TRUE) {
+        echo "<div style='color: green;'>Usuário cadastrado com sucesso!</div>";
+    } else {
+        echo "<div style='color: red;'>Erro ao cadastrar: " . $conn->error . "</div>";
+    }
+}
+
+// Lógica de Busca
+$searchResults = [];
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["search"])) {
+    $query = $_POST["searchInput"];
+    $sql = "SELECT * FROM users WHERE specialty LIKE '%$query%' OR description LIKE '%$query%'";
+    $result = $conn->query($sql);
+
+    if ($result->num_rows > 0) {
+        while ($row = $result->fetch_assoc()) {
+            $searchResults[] = $row;
+        }
+    }
+}
+
+// Fechar conexão
+$conn->close();
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>App de Relacionamento</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
-  <link rel="stylesheet" href="css/styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro e Busca</title>
 </head>
 <body>
-  <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <div class="container">
-      <a class="navbar-brand" href="#">App de Trocas</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ms-auto">
-          <li class="nav-item"><a class="nav-link" href="#login">Login</a></li>
-          <li class="nav-item"><a class="nav-link" href="#cadastro">Cadastro</a></li>
-        </ul>
-      </div>
-    </div>
-  </nav>
-
-  <!-- Hero Section -->
-  <section class="text-center py-5 bg-primary text-white">
-    <div class="container">
-      <h1>Conecte-se e troque habilidades!</h1>
-      <p>Busque serviços e apoios na sua região de forma prática.</p>
-    </div>
-  </section>
-
-  <!-- Pesquisa -->
-  <section class="container my-4">
-    <h2>Buscar Especialidades</h2>
-    <form method="POST" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" class="d-flex">
-      <input type="text" name="searchInput" class="form-control me-2" placeholder="Capoeira, Terapias, etc." required>
-      <button type="submit" class="btn btn-primary">Buscar</button>
+    <h1>Cadastro de Usuários</h1>
+    <form method="POST">
+        <input type="text" name="name" placeholder="Nome" required>
+        <input type="email" name="email" placeholder="Email" required>
+        <input type="text" name="specialty" placeholder="Especialidade" required>
+        <textarea name="description" placeholder="Descrição"></textarea>
+        <input type="text" name="location" placeholder="Localização" required>
+        <button type="submit" name="register">Cadastrar</button>
     </form>
-  </section>
 
-  <!-- Resultados -->
-  <section class="container" id="resultsSection">
-    <h3>Resultados</h3>
-    <div id="results" class="row">
-      <?php
-      if ($_SERVER["REQUEST_METHOD"] === "POST" && !empty($_POST["searchInput"])) {
-        $query = htmlspecialchars($_POST["searchInput"]);
+    <h1>Busca de Usuários</h1>
+    <form method="POST">
+        <input type="text" name="searchInput" placeholder="Buscar especialidades" required>
+        <button type="submit" name="search">Buscar</button>
+    </form>
 
-        // Mock de resultados para simular busca no banco de dados
-        $mockResults = [
-          ["name" => "Aula de Capoeira", "location" => "São Paulo", "description" => "Professor experiente com aulas semanais."],
-          ["name" => "Sessão de Terapia", "location" => "Rio de Janeiro", "description" => "Psicóloga formada com atendimento online."]
-        ];
-
-        // Filtrar resultados com base na busca
-        $filteredResults = array_filter($mockResults, function ($item) use ($query) {
-          return stripos($item["name"], $query) !== false || stripos($item["description"], $query) !== false;
-        });
-
-        // Exibir resultados
-        if (count($filteredResults) > 0) {
-          foreach ($filteredResults as $item) {
-            echo '<div class="col-md-4 mb-3">
-                    <div class="card">
-                      <div class="card-body">
-                        <h5 class="card-title">' . htmlspecialchars($item["name"]) . '</h5>
-                        <p class="card-text">' . htmlspecialchars($item["description"]) . '</p>
-                        <small class="text-muted">' . htmlspecialchars($item["location"]) . '</small>
-                      </div>
-                    </div>
-                  </div>';
-          }
-        } else {
-          echo '<p class="text-muted">Nenhum resultado encontrado para "' . htmlspecialchars($query) . '".</p>';
-        }
-      }
-      ?>
-    </div>
-  </section>
-
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <h2>Resultados da Busca</h2>
+    <?php if (!empty($searchResults)): ?>
+        <ul>
+            <?php foreach ($searchResults as $user): ?>
+                <li>
+                    <strong><?php echo $user['name']; ?></strong> - <?php echo $user['specialty']; ?>
+                    <p><?php echo $user['description']; ?></p>
+                    <small><?php echo $user['location']; ?></small>
+                </li>
+            <?php endforeach; ?>
+        </ul>
+    <?php elseif (isset($_POST["search"])): ?>
+        <p>Nenhum resultado encontrado.</p>
+    <?php endif; ?>
 </body>
 </html>
